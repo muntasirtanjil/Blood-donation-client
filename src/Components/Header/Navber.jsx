@@ -12,7 +12,6 @@ const Navbar = () => {
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Find Donors", path: "/donors" },
-        { name: "Search Request", path: "/search-request" },
         { name: "About Us", path: "/about" },
         { name: "Contact", path: "/contact" },
     ];
@@ -24,12 +23,12 @@ const Navbar = () => {
         }`;
 
     return (
-        <header className="sticky top-0 z-50 border-b border-red-100 bg-white/95 shadow-sm backdrop-blur">
+        <header className="sticky top-0 z-50 border-b border-red-100  bg-transparent shadow-sm backdrop-blur">
             <nav className="navbar mx-auto max-w-7xl px-4 py-3 lg:px-6">
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-2">
-                    <div className="flex h-15 w-15 items-center justify-center rounded-xl bg-red-600 text-white">
-                      <img src={bloodLogo} alt="" />
+                <Link to="/" className="flex items-center ">
+                    <div>
+                      <img className="rounded-full h-12 w-12" src={bloodLogo} alt="" />
                     </div>
 
                     <div>
@@ -57,21 +56,16 @@ const Navbar = () => {
                 </div>
 
                 {/* Desktop Buttons */}
-                <div className="hidden items-center gap-2 md:flex">
+                <div className="hidden items-center rounded-xl border border-red-600 gap-2 md:flex">
                     <Link
                         to="/login"
-                        className="btn btn-ghost text-red-600"
+                        className="btn btn-ghost  text-red-600"
                     >
                         <LuUserRound size={18} />
                         Login
                     </Link>
 
-                    <Link
-                        to="/register"
-                        className="btn border-none bg-red-600 text-white hover:bg-red-700"
-                    >
-                        Register
-                    </Link>
+                   
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -101,22 +95,16 @@ const Navbar = () => {
                             </NavLink>
                         ))}
 
-                        <div className="mt-2 grid grid-cols-2 gap-3">
+                        <div className="mt-2 ">
                             <Link
                                 to="/login"
                                 onClick={() => setIsOpen(false)}
-                                className="btn btn-outline border-red-600 text-red-600"
+                                className="btn btn-outline  border-red-600 text-red-600"
                             >
                                 Login
                             </Link>
 
-                            <Link
-                                to="/register"
-                                onClick={() => setIsOpen(false)}
-                                className="btn border-none bg-red-600 text-white hover:bg-red-700"
-                            >
-                                Register
-                            </Link>
+                           
                         </div>
                     </div>
                 </div>

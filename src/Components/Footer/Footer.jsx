@@ -30,7 +30,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <p className="text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} BloodBridge
+          © {new Date().getFullYear()} LifeDrop
         </p>
 
       </div>

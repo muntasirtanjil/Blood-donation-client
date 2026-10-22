@@ -1,7 +1,8 @@
 
-import { BiDroplet, BiGroup, BiHeart, BiHeartCircle, BiHeartSquare, BiMap, BiPhoneCall, BiPulse, BiSearchAlt, BiUserPlus } from "react-icons/bi";
+import { BiAddToQueue, BiDroplet, BiGroup, BiHeart, BiHeartCircle, BiHeartSquare, BiMap, BiPhoneCall, BiPulse, BiSearchAlt, BiUserPlus } from "react-icons/bi";
 import { BsArrowRight, BsArrowRightCircle, BsDroplet } from "react-icons/bs";
 import { Link } from "react-router";
+import bloodLogo from '../assets/Blood Donation Logo.png'
 
 
 const stats = [
@@ -69,11 +70,11 @@ const Home = () => {
               </Link>
 
               <Link
-                to="/search-request"
+                to="/register"
                 className="btn min-h-12 border-red-200 bg-white px-6 text-red-600 hover:bg-red-50"
               >
-                <BiSearchAlt size={19} />
-                Search Request
+                <BiAddToQueue size={19} />
+                Become A Donor
               </Link>
             </div>
 
@@ -109,12 +110,7 @@ const Home = () => {
 
             <div className="relative flex aspect-square w-full max-w-sm flex-col items-center justify-center rounded-[2.5rem] border border-red-100 bg-white/90 p-8 shadow-xl shadow-red-100/70 sm:rounded-[3rem]">
               <div className="flex h-36 w-36 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-200 sm:h-44 sm:w-44">
-                <BiHeartCircle
-                  size={100}
-                  strokeWidth={1.4}
-                  fill="currentColor"
-                  className="h-24 w-24 sm:h-28 sm:w-28"
-                />
+                <img className="rounded-full" src={bloodLogo} alt="" />
               </div>
 
               <p className="mt-6 text-center text-xl font-extrabold text-slate-800 sm:text-2xl">

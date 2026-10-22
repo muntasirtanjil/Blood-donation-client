@@ -2,6 +2,8 @@ import { createBrowserRouter } from "react-router";
 import Root from "../Root/Root";
 import ErrorPage from "../Pages/EroorPage";
 import Home from "../Pages/Home";
+import AboutUs from "../Pages/AboutUs";
+import FindDonors from "../Pages/FindDonors";
 
 export const router = createBrowserRouter([
     {
@@ -14,8 +16,15 @@ export const router = createBrowserRouter([
 
             },
             {
+                path: '/donors',
+                Component: FindDonors
 
-            }
+            },
+            {
+                path: '/about',
+                Component: AboutUs,
+
+            },
         ]
     },
     {

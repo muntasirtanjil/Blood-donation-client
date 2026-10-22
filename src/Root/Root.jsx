@@ -6,7 +6,7 @@ import Footer from '../Components/Footer/Footer';
 const Root = () => {
     return (
         <div>
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-[1px]">
+            <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-xl">
                 <Navber ></Navber>
             </header>
             <Outlet>
