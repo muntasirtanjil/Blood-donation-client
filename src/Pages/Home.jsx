@@ -70,7 +70,7 @@ const Home = () => {
               </Link>
 
               <Link
-                to="/register"
+                to="/auth/register"
                 className="btn min-h-12 border-red-200 bg-white px-6 text-red-600 hover:bg-red-50"
               >
                 <BiAddToQueue size={19} />

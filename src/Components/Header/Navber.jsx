@@ -58,7 +58,7 @@ const Navbar = () => {
                 {/* Desktop Buttons */}
                 <div className="hidden items-center rounded-xl border border-red-600 gap-2 md:flex">
                     <Link
-                        to="/login"
+                        to="/auth/login"
                         className="btn btn-ghost  text-red-600"
                     >
                         <LuUserRound size={18} />
@@ -97,7 +97,7 @@ const Navbar = () => {
 
                         <div className="mt-2 ">
                             <Link
-                                to="/login"
+                                to="/auth/login"
                                 onClick={() => setIsOpen(false)}
                                 className="btn btn-outline  border-red-600 text-red-600"
                             >
