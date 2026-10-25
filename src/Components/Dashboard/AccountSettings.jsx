@@ -34,11 +34,11 @@ const AccountSettings = () => {
             return;
         }
 
-        if (
-            !user.providerData.some(
-                (provider) => provider.providerId === "password"
-            )
-        ) {
+        const hasPasswordProvider = user.providerData.some(
+            (provider) => provider.providerId === "password"
+        );
+
+        if (!hasPasswordProvider || !user.email) {
             Swal.fire(
                 "Not available",
                 "এই account-এ Email/Password login চালু নেই।",
@@ -119,53 +119,81 @@ const AccountSettings = () => {
             return;
         }
 
-        // First confirmation
-        const confirmation = await Swal.fire({
-            title: "তুমি কি নিশ্চিত?",
-            text: "তোমার LifeDrop account স্থায়ীভাবে মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "হ্যাঁ, Delete করো",
-            cancelButtonText: "না, ফিরে যাই",
-            confirmButtonColor: "#dc2626",
-            reverseButtons: true,
-            focusCancel: true,
-        });
+        if (!user.email) {
+            Swal.fire(
+                "Error",
+                "Account email পাওয়া যায়নি।",
+                "error"
+            );
+            return;
+        }
 
-        if (!confirmation.isConfirmed) return;
+        const hasPasswordProvider = user.providerData.some(
+            (provider) => provider.providerId === "password"
+        );
 
-        // Second confirmation
-        const finalConfirmation = await Swal.fire({
-            title: "শেষবারের মতো নিশ্চিত করো",
-            text: "নিশ্চিত হলে নিচে DELETE লিখো।",
-            icon: "error",
-            input: "text",
-            inputLabel: "Type DELETE to continue",
-            inputPlaceholder: "DELETE",
+        if (!hasPasswordProvider) {
+            Swal.fire(
+                "Not available",
+                "এই demo-তে account delete করার জন্য Email/Password login প্রয়োজন।",
+                "info"
+            );
+            return;
+        }
+
+        // Step 1: Ask for password
+        const passwordResult = await Swal.fire({
+            title: "Confirm Your Password",
+            text: "Account delete করতে তোমার বর্তমান password দাও।",
+            input: "password",
+            inputPlaceholder: "Enter your current password",
+            inputAttributes: {
+                autocomplete: "current-password",
+                autocapitalize: "off",
+                autocorrect: "off",
+            },
             showCancelButton: true,
-            confirmButtonText: "Permanently Delete",
+            confirmButtonText: "Continue",
             cancelButtonText: "Cancel",
-            confirmButtonColor: "#b91c1c",
-            preConfirm: (value) => {
-                if (value !== "DELETE") {
-                    Swal.showValidationMessage(
-                        'ঠিক "DELETE" লিখতে হবে।'
-                    );
-                    return false;
+            confirmButtonColor: "#dc2626",
+            inputValidator: (value) => {
+                if (!value) {
+                    return "Password দিতে হবে!";
                 }
-
-                return true;
             },
         });
 
-        if (!finalConfirmation.isConfirmed) return;
+        if (!passwordResult.isConfirmed) return;
 
         setDeleting(true);
 
         try {
+            // Step 2: Verify the password BEFORE deleting anything
+            const credential = EmailAuthProvider.credential(
+                user.email,
+                passwordResult.value
+            );
+
+            await reauthenticateWithCredential(user, credential);
+
+            // Step 3: Final confirmation
+            const confirmation = await Swal.fire({
+                title: "Are you absolutely sure?",
+                text: "তোমার LifeDrop account স্থায়ীভাবে delete হবে।",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Delete Account",
+                cancelButtonText: "Cancel",
+                confirmButtonColor: "#dc2626",
+                reverseButtons: true,
+                focusCancel: true,
+            });
+
+            if (!confirmation.isConfirmed) return;
+
             /*
-             * First delete the donor profile from MongoDB.
-             * This route is currently an unverified development route.
+             * Step 4: Delete donor profile from MongoDB.
+             * This is an unverified development endpoint.
              */
             const response = await fetch(
                 `http://localhost:3000/donors/uid/${user.uid}`,
@@ -176,15 +204,15 @@ const AccountSettings = () => {
 
             const data = await response.json().catch(() => ({}));
 
-            if (!response.ok) {
+            if (!response.ok && response.status !== 404) {
                 throw new Error(
                     data.message || "Donor profile delete করা যায়নি।"
                 );
             }
 
             /*
-             * Then delete the Firebase Authentication account.
-             * Recent login may be required by Firebase.
+             * Step 5: Delete Firebase Authentication account.
+             * Reauthentication has just happened above.
              */
             await deleteUser(user);
 
@@ -199,12 +227,22 @@ const AccountSettings = () => {
         } catch (error) {
             console.error("Account deletion error:", error);
 
-            let message =
-                error.message || "Account delete করতে সমস্যা হয়েছে।";
+            let message = "Account delete করা যায়নি। আবার চেষ্টা করো।";
 
-            if (error.code === "auth/requires-recent-login") {
-                message =
-                    "নিরাপত্তার জন্য আবার Login করে তারপর account delete করো।";
+            if (
+                [
+                    "auth/invalid-credential",
+                    "auth/wrong-password",
+                    "auth/invalid-login-credentials",
+                ].includes(error.code)
+            ) {
+                message = "তোমার বর্তমান password সঠিক নয়।";
+            } else if (
+                error.code === "auth/requires-recent-login"
+            ) {
+                message = "আবার Login করে চেষ্টা করো।";
+            } else if (error.message) {
+                message = error.message;
             }
 
             await Swal.fire("Delete Failed", message, "error");
