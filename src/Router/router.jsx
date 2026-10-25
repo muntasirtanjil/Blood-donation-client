@@ -11,6 +11,7 @@ import PrivateRoute from "../provider/PrivateRoute";
 import UserDashbord from "../Components/Dashboard/UserDashbord";
 import MyDonorProfile from "../Components/Dashboard/MyDonorProfile";
 import AccountSettings from "../Components/Dashboard/AccountSettings";
+import VerifyEmail from "../Pages/VerifyEmail";
 
 export const router = createBrowserRouter([
     {
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
             }
 
         ]
+    },
+    {
+        path: "/verify-email",
+        element: <VerifyEmail />,
     },
 
     {

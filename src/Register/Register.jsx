@@ -1,12 +1,16 @@
+
 import { use, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { BiHeart } from "react-icons/bi";
 import { AuthContext } from "../provider/AuthProvider";
+import { sendEmailVerification } from "firebase/auth";
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [selectedDistrict, setSelectedDistrict] = useState("");
-    const { setUser, CreateUser } = use(AuthContext);
+    const [loading, setLoading] = useState(false);
+
+    const { CreateUser, setUser,  } = use(AuthContext);
     const navigate = useNavigate();
 
     const locationData = {
@@ -18,7 +22,6 @@ const Register = () => {
             "Sonagazi",
             "Fulgazi",
         ],
-
         Cumilla: [
             "Adarsha Sadar",
             "Barura",
@@ -38,7 +41,6 @@ const Register = () => {
             "Sadar Dakshin",
             "Titas",
         ],
-
         Noakhali: [
             "Noakhali Sadar",
             "Begumganj",
@@ -50,7 +52,6 @@ const Register = () => {
             "Kabirhat",
             "Sonaimuri",
         ],
-
         Chattogram: [
             "Anwara",
             "Banshkhali",
@@ -70,9 +71,9 @@ const Register = () => {
         ],
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-
+        setLoading(true);
 
         const form = e.target;
         const formData = new FormData(form);
@@ -84,43 +85,49 @@ const Register = () => {
         const upazila = formData.get("upazila");
         const district = formData.get("district");
         const bloodGroup = formData.get("bloodGroup");
-        const newDonors = { name, email, number, upazila, district, bloodGroup };
-        // console.log(name, email, number, password, upazila, district, bloodGroup);
-        CreateUser(email, password)
-            .then((result) => {
-                const user = result.user;
 
-                setUser(user);
-                newDonors.uid = user.uid;
+        const donorData = {
+            name,
+            email,
+            number,
+            upazila,
+            district,
+            bloodGroup,
+        };
 
-                // after login send data to db
+        try {
+            // Create Firebase account
+            const result = await CreateUser(email, password);
+            const user = result.user;
 
-                fetch("http://localhost:3000/donors", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(newDonors)
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-                    })
-                    .catch(error => {
-                        console.error("Error sending donor data:", error);
-                    });
-                navigate("/dashboard")
+            // Save pending donor data until email verification
+            localStorage.setItem(
+                "pendingDonor",
+                JSON.stringify(donorData)
+            );
 
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                // ..
-            });
+            // Send verification email
+            await sendEmailVerification(user);
 
+            alert(
+                "Verification email sent! Check your inbox and click the verification link."
+            );
 
+            // Keep user signed in until verification is checked
+            navigate("/verify-email");
+        } catch (error) {
+            console.error("Registration error:", error);
 
-    }
+            if (error.code === "auth/email-already-in-use") {
+                alert("এই email দিয়ে ইতিমধ্যে account তৈরি করা হয়েছে।");
+            } else {
+                alert(error.message || "Registration failed!");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
             <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
@@ -176,6 +183,7 @@ const Register = () => {
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                             Password
                         </label>
+
                         <input
                             type={showPassword ? "text" : "password"}
                             name="password"
@@ -190,7 +198,9 @@ const Register = () => {
                                 type="checkbox"
                                 className="checkbox checkbox-sm checkbox-error"
                                 checked={showPassword}
-                                onChange={(e) => setShowPassword(e.target.checked)}
+                                onChange={(e) =>
+                                    setShowPassword(e.target.checked)
+                                }
                             />
                             Show password
                         </label>
@@ -202,7 +212,6 @@ const Register = () => {
                             Phone Number
                         </label>
                         <input
-
                             type="tel"
                             name="number"
                             placeholder="01XXXXXXXXX"
@@ -219,6 +228,7 @@ const Register = () => {
                             <label className="mb-1 block text-sm font-medium text-gray-700">
                                 Blood Group
                             </label>
+
                             <select
                                 name="bloodGroup"
                                 defaultValue=""
@@ -228,14 +238,20 @@ const Register = () => {
                                 <option value="" disabled>
                                     Select group
                                 </option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
+                                {[
+                                    "A+",
+                                    "A-",
+                                    "B+",
+                                    "B-",
+                                    "AB+",
+                                    "AB-",
+                                    "O+",
+                                    "O-",
+                                ].map((group) => (
+                                    <option key={group} value={group}>
+                                        {group}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -244,10 +260,13 @@ const Register = () => {
                             <label className="mb-1 block text-sm font-medium text-gray-700">
                                 District
                             </label>
+
                             <select
                                 name="district"
                                 value={selectedDistrict}
-                                onChange={(e) => setSelectedDistrict(e.target.value)}
+                                onChange={(e) =>
+                                    setSelectedDistrict(e.target.value)
+                                }
                                 className="select w-full border-gray-200 bg-white"
                                 required
                             >
@@ -269,6 +288,7 @@ const Register = () => {
                         <label className="mb-1 block text-sm font-medium text-gray-700">
                             Upazila
                         </label>
+
                         <select
                             name="upazila"
                             defaultValue=""
@@ -293,9 +313,10 @@ const Register = () => {
                     {/* Submit */}
                     <button
                         type="submit"
+                        disabled={loading}
                         className="btn w-full border-0 bg-red-600 text-white hover:bg-red-700"
                     >
-                        Create Account
+                        {loading ? "Please wait..." : "Create Account"}
                     </button>
                 </form>
 
@@ -316,8 +337,6 @@ const Register = () => {
             </div>
         </div>
     );
-
-}
-
+};
 
 export default Register;
