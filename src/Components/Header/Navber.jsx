@@ -1,19 +1,57 @@
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { BiHeart, BiMenu, BiX } from "react-icons/bi";
 import { LuUserRound } from "react-icons/lu";
 import { Link, NavLink } from "react-router";
 import bloodLogo from "../../assets/Blood Donation Logo.png"
+import { AuthContext } from "../../provider/AuthProvider";
+import Swal from "sweetalert2";
 
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const { user, LogOut, } = use(AuthContext);
+
+    const handleLogout = () => {
+
+        // Sign-out successful.
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, LogOut!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                LogOut().then(() => {
+
+                    Swal.fire({
+                        title: "Logout!",
+                        text: "Logout successful.",
+                        icon: "success"
+                    });
+                }).catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    alert(errorCode, errorMessage)
+                });
+            }
+
+
+
+        });
+
+    }
+
 
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Find Donors", path: "/donors" },
         { name: "About Us", path: "/about" },
         { name: "Contact", path: "/contact" },
+        ...(user ? [{ name: "Dashboard", path: "/dashboard" }] : []),
     ];
 
     const linkClass = ({ isActive }) =>
@@ -28,16 +66,17 @@ const Navbar = () => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center ">
                     <div>
-                      <img className="rounded-full h-12 w-12" src={bloodLogo} alt="" />
+                        <img className="rounded-full h-12 w-12" src={bloodLogo} alt="" />
                     </div>
 
                     <div>
                         <h1 className="text-lg font-extrabold text-gray-900 sm:text-xl">
-                           Life<span className="text-red-600">Drop</span>
+                            Life<span className="text-red-600">Drop</span>
                         </h1>
                         <p className="text-xs text-gray-500">
                             Save Lives. Give Blood.
                         </p>
+
                     </div>
                 </Link>
 
@@ -56,16 +95,18 @@ const Navbar = () => {
                 </div>
 
                 {/* Desktop Buttons */}
-                <div className="hidden items-center rounded-xl border border-red-600 gap-2 md:flex">
-                    <Link
-                        to="/auth/login"
-                        className="btn btn-ghost  text-red-600"
-                    >
-                        <LuUserRound size={18} />
-                        Login
-                    </Link>
+                <div className="hidden items-center rounded-xl  gap-2 md:flex">
+                    {
+                        user ? <button className="btn btn-outline  border-red-600 text-red-600" onClick={handleLogout}>LogOut</button> : <Link
+                            to="/auth/login"
+                            onClick={() => setIsOpen(false)}
+                            className="btn btn-outline  border-red-600 text-red-600"
+                        >
+                            Login
+                        </Link>
+                    }
 
-                   
+
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -96,15 +137,25 @@ const Navbar = () => {
                         ))}
 
                         <div className="mt-2 ">
-                            <Link
+                            {/* <Link
                                 to="/auth/login"
                                 onClick={() => setIsOpen(false)}
                                 className="btn btn-outline  border-red-600 text-red-600"
                             >
                                 Login
-                            </Link>
+                            </Link> */}
 
-                           
+                            {
+                                user ? <button onClick={handleLogout}>LogOut</button> : <Link
+                                    to="/auth/login"
+                                    onClick={() => setIsOpen(false)}
+                                    className="btn btn-outline  border-red-600 text-red-600"
+                                >
+                                    Login
+                                </Link>
+                            }
+
+
                         </div>
                     </div>
                 </div>

@@ -1,8 +1,28 @@
 
-import React from "react";
+import React, { use } from "react";
 import { Form, Link } from "react-router";
+import { AuthContext } from "../provider/AuthProvider";
 
 const Login = () => {
+    const { LoginUser } = use(AuthContext);
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const email = form.email.value;
+        const password = form.password.value;
+
+        LoginUser(email, password)
+            .then((result) => {
+                console.log("Login successful:", result.user);
+                form.reset();
+            })
+            .catch((error) => {
+                console.error("Login failed:", error.message);
+            });
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 px-4 py-10">
             <div className="mx-auto flex min-h-[80vh] max-w-md items-center">
@@ -26,9 +46,7 @@ const Login = () => {
 
                     {/* Login Form */}
                     <Form
-                        method="post"
-                        action="/auth/login"
-                        onSubmit={(event) => event.preventDefault()}
+                        onSubmit={handleLogin}
                         className="mt-7 space-y-5"
                     >
                         <div>

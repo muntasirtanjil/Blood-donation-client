@@ -1,390 +1,318 @@
-
-import { useState } from "react";
+import { use, useState } from "react";
 import { Link } from "react-router";
-import {
-    BiDroplet,
-    BiUser,
-    BiEnvelope,
-    BiLockAlt,
-    BiPhone,
-    BiMap,
-    BiShow,
-    BiHide,
-    BiHeart,
-} from "react-icons/bi";
-
-const initialFormData = {
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    bloodGroup: "",
-    district: "",
-    upazila: "",
-    available: true,
-    agree: false,
-};
-
-const bloodGroups = [
-    "A+",
-    "A-",
-    "B+",
-    "B-",
-    "AB+",
-    "AB-",
-    "O+",
-    "O-",
-];
-
-const districts = ["Cumilla", "Feni", "Dhaka", "Chattogram"];
+import { BiHeart } from "react-icons/bi";
+import { AuthContext } from "../provider/AuthProvider";
 
 const Register = () => {
-    const [formData, setFormData] = useState(initialFormData);
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [selectedDistrict, setSelectedDistrict] = useState("");
+    const { setUser, CreateUser } = use(AuthContext);
 
-    const handleChange = (event) => {
-        const { name, value, type, checked } = event.target;
+    const locationData = {
+        Feni: [
+            "Feni Sadar",
+            "Chhagalnaiya",
+            "Daganbhuiyan",
+            "Parshuram",
+            "Sonagazi",
+            "Fulgazi",
+        ],
 
-        setFormData((previous) => ({
-            ...previous,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+        Cumilla: [
+            "Adarsha Sadar",
+            "Barura",
+            "Brahmanpara",
+            "Burichang",
+            "Chandina",
+            "Chauddagram",
+            "Daudkandi",
+            "Debidwar",
+            "Homna",
+            "Laksam",
+            "Lalmai",
+            "Meghna",
+            "Monoharganj",
+            "Muradnagar",
+            "Nangalkot",
+            "Sadar Dakshin",
+            "Titas",
+        ],
 
-        setError("");
+        Noakhali: [
+            "Noakhali Sadar",
+            "Begumganj",
+            "Companiganj",
+            "Chatkhil",
+            "Hatiya",
+            "Subarnachar",
+            "Senbagh",
+            "Kabirhat",
+            "Sonaimuri",
+        ],
+
+        Chattogram: [
+            "Anwara",
+            "Banshkhali",
+            "Boalkhali",
+            "Chandanaish",
+            "Fatikchhari",
+            "Hathazari",
+            "Karnaphuli",
+            "Lohagara",
+            "Mirsharai",
+            "Patiya",
+            "Rangunia",
+            "Raozan",
+            "Sandwip",
+            "Satkania",
+            "Sitakunda",
+        ],
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setError("");
+    const handleRegister = (e) => {
+        e.preventDefault();
 
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-        }
+        const form = e.target;
+        const formData = new FormData(form);
 
-        if (!formData.agree) {
-            setError("Please accept the terms and conditions.");
-            return;
-        }
+        const name = formData.get("name");
+        const email = formData.get("email");
+        const password = formData.get("password");
+        const number = formData.get("number");
+        const upazila = formData.get("upazila");
+        const district = formData.get("district");
+        const bloodGroup = formData.get("bloodGroup");
+        const newDonors = { name, email, number, upazila, district, bloodGroup };
+        // console.log(name, email, number, password, upazila, district, bloodGroup);
+        CreateUser(email, password)
+            .then((result) => {
+                const user = result.user;
+                setUser(user);
 
-        setLoading(true);
+                // after login send data to db
 
-        try {
-            // Firebase Authentication will be connected here.
-            console.log("Registration form is valid.");
-        } catch {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+                fetch("http://localhost:3000/donors", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(newDonors)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error("Error sending donor data:", error);
+                    });
 
-    const inputClass =
-        "w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100";
 
-    const selectClass =
-        "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100";
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                // ..
+            });
 
+
+
+    }
     return (
-        <main className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:py-16">
-            <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-white shadow-xl lg:grid-cols-2">
-                {/* Left panel */}
-                <section className="hidden flex-col justify-between bg-red-600 p-10 text-white lg:flex xl:p-14">
-                    <Link to="/" className="flex items-center gap-2 text-2xl font-bold">
-                        <BiDroplet className="text-4xl" />
-                        Roktiva
-                    </Link>
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
+            <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
 
+                {/* Header */}
+                <div className="mb-7 text-center">
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
+                        <BiHeart className="text-3xl text-red-600" />
+                    </div>
+
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        Join Life<span className="text-red-600">Drop</span>
+                    </h1>
+
+                    <p className="mt-2 text-sm text-gray-500">
+                        Create your account and help save lives.
+                    </p>
+                </div>
+
+                {/* Register Form */}
+                <form onSubmit={handleRegister} className="space-y-4">
+
+                    {/* Full Name */}
                     <div>
-                        <BiHeart className="mb-5 text-6xl" />
-
-                        <h1 className="text-4xl font-bold leading-tight xl:text-5xl">
-                            Become a donor.
-                            <br />
-                            Save a life.
-                        </h1>
-
-                        <p className="mt-5 max-w-md leading-7 text-red-100">
-                            Join our blood donation community and help people find blood
-                            donors when they need them most.
-                        </p>
-                    </div>
-
-                    <p className="text-sm text-red-100">
-                        Every drop counts. Every donor matters.
-                    </p>
-                </section>
-
-                {/* Registration form */}
-                <section className="p-5 sm:p-8 lg:p-10 xl:p-12">
-                    <Link
-                        to="/"
-                        className="flex items-center gap-2 text-xl font-bold text-red-600 lg:hidden"
-                    >
-                        <BiDroplet className="text-3xl" />
-                        Roktiva
-                    </Link>
-
-                    <div className="mb-8 mt-6 lg:mt-0">
-                        <h2 className="text-3xl font-bold text-gray-900">
-                            Create Account
-                        </h2>
-                        <p className="mt-2 text-sm text-gray-500">
-                            Join Roktiva and help save lives.
-                        </p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Full name */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Full Name
-                            </label>
-                            <div className="relative">
-                                <BiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    placeholder="Enter your full name"
-                                    className={inputClass}
-                                    autoComplete="name"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {/* Email */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <BiEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="you@example.com"
-                                    className={inputClass}
-                                    autoComplete="email"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {/* Phone */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Phone Number
-                            </label>
-                            <div className="relative">
-                                <BiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    placeholder="Enter your phone number"
-                                    className={inputClass}
-                                    autoComplete="tel"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {/* Blood group and district */}
-                        <div className="grid gap-5 sm:grid-cols-2">
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                    Blood Group
-                                </label>
-                                <select
-                                    name="bloodGroup"
-                                    value={formData.bloodGroup}
-                                    onChange={handleChange}
-                                    className={selectClass}
-                                    required
-                                >
-                                    <option value="">Select group</option>
-                                    {bloodGroups.map((group) => (
-                                        <option key={group} value={group}>
-                                            {group}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                    District
-                                </label>
-                                <select
-                                    name="district"
-                                    value={formData.district}
-                                    onChange={handleChange}
-                                    className={selectClass}
-                                    required
-                                >
-                                    <option value="">Select district</option>
-                                    {districts.map((district) => (
-                                        <option key={district} value={district}>
-                                            {district}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Upazila */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Upazila
-                            </label>
-                            <div className="relative">
-                                <BiMap className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
-                                <input
-                                    type="text"
-                                    name="upazila"
-                                    value={formData.upazila}
-                                    onChange={handleChange}
-                                    placeholder="Enter your upazila"
-                                    className={inputClass}
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <BiLockAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="Create a password"
-                                    className={`${inputClass} pr-12`}
-                                    autoComplete="new-password"
-                                    minLength={6}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword((previous) => !previous)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-xl text-gray-500"
-                                    aria-label={showPassword ? "Hide password" : "Show password"}
-                                >
-                                    {showPassword ? <BiHide /> : <BiShow />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Confirm password */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Confirm Password
-                            </label>
-                            <div className="relative">
-                                <BiLockAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400" />
-                                <input
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    placeholder="Enter password again"
-                                    className={`${inputClass} pr-12`}
-                                    autoComplete="new-password"
-                                    minLength={6}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setShowConfirmPassword((previous) => !previous)
-                                    }
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-xl text-gray-500"
-                                    aria-label={
-                                        showConfirmPassword ? "Hide password" : "Show password"
-                                    }
-                                >
-                                    {showConfirmPassword ? <BiHide /> : <BiShow />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Donor availability */}
-                        <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-red-50 p-4">
-                            <input
-                                type="checkbox"
-                                name="available"
-                                checked={formData.available}
-                                onChange={handleChange}
-                                className="mt-1 accent-red-600"
-                            />
-                            <span>
-                                <span className="block text-sm font-semibold text-gray-800">
-                                    Available to donate blood
-                                </span>
-                                <span className="mt-1 block text-xs leading-5 text-gray-500">
-                                    You can change your availability later.
-                                </span>
-                            </span>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Full Name
                         </label>
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Enter your full name"
+                            className="input w-full border-gray-200 bg-white"
+                            required
+                        />
+                    </div>
 
-                        {/* Terms */}
-                        <label className="flex cursor-pointer items-start gap-3 text-sm text-gray-600">
+                    {/* Email */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            className="input w-full border-gray-200 bg-white"
+                            required
+                        />
+                    </div>
+
+                    {/* Password */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Password
+                        </label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            placeholder="Create a password"
+                            className="input w-full border-gray-200 bg-white"
+                            minLength={6}
+                            required
+                        />
+
+                        <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-gray-500">
                             <input
                                 type="checkbox"
-                                name="agree"
-                                checked={formData.agree}
-                                onChange={handleChange}
-                                className="mt-1 accent-red-600"
+                                className="checkbox checkbox-sm checkbox-error"
+                                checked={showPassword}
+                                onChange={(e) => setShowPassword(e.target.checked)}
+                            />
+                            Show password
+                        </label>
+                    </div>
+
+                    {/* Phone */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            name="number"
+                            placeholder="01XXXXXXXXX"
+                            className="input w-full border-gray-200 bg-white"
+                            required
+                        />
+                    </div>
+
+                    {/* Blood Group & District */}
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                        {/* Blood Group */}
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Blood Group
+                            </label>
+                            <select
+                                name="bloodGroup"
+                                defaultValue=""
+                                className="select w-full border-gray-200 bg-white"
                                 required
-                            />
-                            <span>
-                                I agree to the terms and conditions.
-                            </span>
+                            >
+                                <option value="" disabled>
+                                    Select group
+                                </option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+
+                        {/* District */}
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                District
+                            </label>
+                            <select
+                                name="district"
+                                value={selectedDistrict}
+                                onChange={(e) => setSelectedDistrict(e.target.value)}
+                                className="select w-full border-gray-200 bg-white"
+                                required
+                            >
+                                <option value="" disabled>
+                                    Select district
+                                </option>
+
+                                {Object.keys(locationData).map((district) => (
+                                    <option key={district} value={district}>
+                                        {district}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Upazila */}
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                            Upazila
                         </label>
-
-                        {error && (
-                            <p role="alert" className="text-sm text-red-600">
-                                {error}
-                            </p>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full rounded-xl bg-red-600 py-3.5 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        <select
+                            name="upazila"
+                            defaultValue=""
+                            key={selectedDistrict}
+                            className="select w-full border-gray-200 bg-white"
+                            disabled={!selectedDistrict}
+                            required
                         >
-                            {loading ? "Please wait..." : "Create Account"}
-                        </button>
-                    </form>
+                            <option value="" disabled>
+                                Select upazila
+                            </option>
 
-                    <p className="mt-6 text-center text-sm text-gray-600">
-                        Already have an account?{" "}
-                        <Link
-                            to="/auth/login"
-                            className="font-semibold text-red-600 hover:text-red-700"
-                        >
-                            Login
-                        </Link>
-                    </p>
-                </section>
+                            {selectedDistrict &&
+                                locationData[selectedDistrict].map((upazila) => (
+                                    <option key={upazila} value={upazila}>
+                                        {upazila}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        className="btn w-full border-0 bg-red-600 text-white hover:bg-red-700"
+                    >
+                        Create Account
+                    </button>
+                </form>
+
+                {/* Login Link */}
+                <p className="mt-6 text-center text-sm text-gray-600">
+                    Already have an account?{" "}
+                    <Link
+                        to="/auth/login"
+                        className="font-semibold text-red-600 hover:underline"
+                    >
+                        Login
+                    </Link>
+                </p>
+
+                <p className="mt-5 text-center text-xs text-gray-400">
+                    Every drop counts. Your donation can save a life.
+                </p>
             </div>
-        </main>
+        </div>
     );
-};
+
+}
+
 
 export default Register;

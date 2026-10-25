@@ -1,39 +1,10 @@
 
-import { BiAddToQueue, BiDroplet, BiGroup, BiHeart, BiHeartCircle, BiHeartSquare, BiMap, BiPhoneCall, BiPulse, BiSearchAlt, BiUserPlus } from "react-icons/bi";
+import { BiAddToQueue, BiDroplet,  BiHeart, BiHeartSquare,  } from "react-icons/bi";
 import { BsArrowRight, BsArrowRightCircle, BsDroplet } from "react-icons/bs";
 import { Link } from "react-router";
 import bloodLogo from '../assets/Blood Donation Logo.png'
 
 
-const stats = [
-  { icon: BiDroplet, value: "5,000+", label: "Total Donors" },
-  { icon: BiGroup, value: "3,200+", label: "Lives Helped" },
-  { icon: BiHeart, value: "12+", label: "Blood Groups" },
-  { icon: BiMap, value: "64", label: "Districts Covered" },
-];
-
-const steps = [
-  {
-    icon: BiUserPlus,
-    title: "Register",
-    description: "Create an account as a donor or requester.",
-  },
-  {
-    icon: BiSearchAlt,
-    title: "Find Donors",
-    description: "Search for donors by blood group and location.",
-  },
-  {
-    icon: BiPhoneCall,
-    title: "Connect",
-    description: "Contact donors and discuss donation needs.",
-  },
-  {
-    icon: BiPulse,
-    title: "Save Lives",
-    description: "Donate blood and make a difference.",
-  },
-];
 
 const Home = () => {
   return (

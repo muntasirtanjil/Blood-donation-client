@@ -7,6 +7,8 @@ import FindDonors from "../Pages/FindDonors";
 import Register from "../Register/Register";
 import AuthLayout from '../provider/AuthLayout'
 import Login from "../Register/Login";
+import PrivateRoute from "../provider/PrivateRoute";
+import UserDashbord from "../Components/Dashboard/UserDashbord";
 
 export const router = createBrowserRouter([
     {
@@ -45,6 +47,13 @@ export const router = createBrowserRouter([
             }
 
         ]
+    },
+    {
+        path: '/dashboard',
+        element: <PrivateRoute>
+            <UserDashbord></UserDashbord>
+        </PrivateRoute>
+
     },
     {
         path: "*",
