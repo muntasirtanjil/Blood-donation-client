@@ -129,7 +129,7 @@ const Home = () => {
             </div>
 
             <Link
-              to="/register"
+             to="/auth/register"
               className="btn min-h-12 shrink-0 border-none bg-white px-6 text-red-600 hover:bg-red-50"
             >
               Become a Donor
@@ -157,7 +157,7 @@ const Home = () => {
         </p>
 
         <Link
-          to="/register"
+         to="/auth/register"
           className="btn mt-6 border-none bg-red-600 px-7 text-white hover:bg-red-700"
         >
           Join as a Donor

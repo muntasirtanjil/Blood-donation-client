@@ -17,15 +17,13 @@ const Footer = () => {
           <Link to="/" className="transition hover:text-red-400">
             Home
           </Link>
-          <Link to="/find-donors" className="transition hover:text-red-400">
+          <Link to="/donors" className="transition hover:text-red-400">
             Find Donors
           </Link>
           <Link to="/about" className="transition hover:text-red-400">
             About
           </Link>
-          <Link to="/contact" className="transition hover:text-red-400">
-            Contact
-          </Link>
+       
         </div>
 
         {/* Copyright */}
