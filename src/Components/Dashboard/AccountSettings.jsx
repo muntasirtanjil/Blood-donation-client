@@ -196,7 +196,7 @@ const AccountSettings = () => {
              * This is an unverified development endpoint.
              */
             const response = await fetch(
-                `http://localhost:3000/donors/uid/${user.uid}`,
+                `https://blood-donation-server-silk.vercel.app/donors/uid/${user.uid}`,
                 {
                     method: "DELETE",
                 }

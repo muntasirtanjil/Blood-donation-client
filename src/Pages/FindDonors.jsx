@@ -20,7 +20,7 @@ const FindDonors = () => {
 
   // Fetch donors from backend
   useEffect(() => {
-    fetch("http://localhost:3000/donors")
+    fetch("https://blood-donation-server-silk.vercel.app/donors")
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch donors");

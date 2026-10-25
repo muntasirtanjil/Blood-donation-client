@@ -41,7 +41,7 @@ const MyDonorProfile = () => {
 
             try {
                 const response = await fetch(
-                    `http://localhost:3000/donors/uid/${user.uid}`
+                    `https://blood-donation-server-silk.vercel.app/donors/uid/${user.uid}`
                 );
 
                 const data = await response.json();
@@ -95,7 +95,7 @@ const MyDonorProfile = () => {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/donors/uid/${user.uid}`,
+                `https://blood-donation-server-silk.vercel.app/donors/uid/${user.uid}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -137,7 +137,7 @@ const MyDonorProfile = () => {
         if (user?.uid) {
             setLoading(true);
 
-            fetch(`http://localhost:3000/donors/uid/${user.uid}`)
+            fetch(`https://blood-donation-server-silk.vercel.app/donors/uid/${user.uid}`)
                 .then(async (response) => {
                     const data = await response.json();
 
