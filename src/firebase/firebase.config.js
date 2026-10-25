@@ -1,17 +1,13 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+import { initializeApp } from "firebase/app";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyC-HwiF0IqQrO5iPKzyzjET2TCc8ZG9MRc",
-  authDomain: "blood-donation-8fbbb.firebaseapp.com",
-  projectId: "blood-donation-8fbbb",
-  storageBucket: "blood-donation-8fbbb.firebasestorage.app",
-  messagingSenderId: "926164499410",
-  appId: "1:926164499410:web:d33d49edd7d019cc31260b"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
