@@ -49,8 +49,7 @@ const Navbar = () => {
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Find Donors", path: "/donors" },
-        { name: "About Us", path: "/about" },
-        { name: "Contact", path: "/contact" },
+        { name: "About ", path: "/about" },
         ...(user ? [{ name: "Dashboard", path: "/dashboard" }] : []),
     ];
 
@@ -137,13 +136,7 @@ const Navbar = () => {
                         ))}
 
                         <div className="mt-2 ">
-                            {/* <Link
-                                to="/auth/login"
-                                onClick={() => setIsOpen(false)}
-                                className="btn btn-outline  border-red-600 text-red-600"
-                            >
-                                Login
-                            </Link> */}
+                        
 
                             {
                                 user ? <button onClick={handleLogout}>LogOut</button> : <Link

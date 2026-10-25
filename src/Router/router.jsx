@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import Root from "../Root/Root";
 import ErrorPage from "../Pages/EroorPage";
 import Home from "../Pages/Home";
@@ -9,6 +9,8 @@ import AuthLayout from '../provider/AuthLayout'
 import Login from "../Register/Login";
 import PrivateRoute from "../provider/PrivateRoute";
 import UserDashbord from "../Components/Dashboard/UserDashbord";
+import MyDonorProfile from "../Components/Dashboard/MyDonorProfile";
+import AccountSettings from "../Components/Dashboard/AccountSettings";
 
 export const router = createBrowserRouter([
     {
@@ -48,13 +50,30 @@ export const router = createBrowserRouter([
 
         ]
     },
-    {
-        path: '/dashboard',
-        element: <PrivateRoute>
-            <UserDashbord></UserDashbord>
-        </PrivateRoute>
 
-    },
+    {
+        path: "/dashboard",
+        element: (
+            <PrivateRoute>
+                <UserDashbord />
+            </PrivateRoute>
+        ),
+        children: [
+            {
+                index: true,
+                element: <Navigate to="my-profile" replace />,
+            },
+            {
+                path: "my-profile",
+                element: <MyDonorProfile />,
+            },
+            {
+                path: "account-settings",
+                element: <AccountSettings />,
+            },
+        ],
+    }
+    ,
     {
         path: "*",
         Component: ErrorPage,

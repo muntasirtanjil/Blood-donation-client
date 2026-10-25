@@ -1,5 +1,5 @@
 import { use, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { BiHeart } from "react-icons/bi";
 import { AuthContext } from "../provider/AuthProvider";
 
@@ -7,6 +7,7 @@ const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const { setUser, CreateUser } = use(AuthContext);
+    const navigate = useNavigate();
 
     const locationData = {
         Feni: [
@@ -72,6 +73,7 @@ const Register = () => {
     const handleRegister = (e) => {
         e.preventDefault();
 
+
         const form = e.target;
         const formData = new FormData(form);
 
@@ -87,7 +89,9 @@ const Register = () => {
         CreateUser(email, password)
             .then((result) => {
                 const user = result.user;
+
                 setUser(user);
+                newDonors.uid = user.uid;
 
                 // after login send data to db
 
@@ -105,7 +109,7 @@ const Register = () => {
                     .catch(error => {
                         console.error("Error sending donor data:", error);
                     });
-
+                navigate("/dashboard")
 
             })
             .catch((error) => {
@@ -198,6 +202,7 @@ const Register = () => {
                             Phone Number
                         </label>
                         <input
+
                             type="tel"
                             name="number"
                             placeholder="01XXXXXXXXX"

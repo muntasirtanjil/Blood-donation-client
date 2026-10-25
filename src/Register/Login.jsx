@@ -1,10 +1,11 @@
 
 import React, { use } from "react";
-import { Form, Link } from "react-router";
+import { Form, Link, useNavigate } from "react-router";
 import { AuthContext } from "../provider/AuthProvider";
 
 const Login = () => {
     const { LoginUser } = use(AuthContext);
+    const navigate = useNavigate();
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -17,6 +18,7 @@ const Login = () => {
             .then((result) => {
                 console.log("Login successful:", result.user);
                 form.reset();
+                navigate("/dashboard");
             })
             .catch((error) => {
                 console.error("Login failed:", error.message);
