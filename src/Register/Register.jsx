@@ -10,7 +10,7 @@ const Register = () => {
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const { CreateUser, setUser,  } = use(AuthContext);
+    const { CreateUser } = use(AuthContext);
     const navigate = useNavigate();
 
     const locationData = {
@@ -71,6 +71,16 @@ const Register = () => {
         ],
     };
 
+    // Reusable classes for readable form controls
+    const inputClass =
+        "input w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100";
+
+    const selectClass =
+        "select w-full border border-gray-300 bg-white text-gray-900 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100 disabled:bg-gray-100 disabled:text-gray-500";
+
+    const labelClass =
+        "mb-1.5 block text-sm font-semibold text-gray-800";
+
     const handleRegister = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -78,13 +88,13 @@ const Register = () => {
         const form = e.target;
         const formData = new FormData(form);
 
-        const name = formData.get("name");
-        const email = formData.get("email");
+        const name = formData.get("name")?.toString().trim();
+        const email = formData.get("email")?.toString().trim();
         const password = formData.get("password");
-        const number = formData.get("number");
-        const upazila = formData.get("upazila");
-        const district = formData.get("district");
-        const bloodGroup = formData.get("bloodGroup");
+        const number = formData.get("number")?.toString().trim();
+        const upazila = formData.get("upazila")?.toString();
+        const district = formData.get("district")?.toString();
+        const bloodGroup = formData.get("bloodGroup")?.toString();
 
         const donorData = {
             name,
@@ -113,13 +123,17 @@ const Register = () => {
                 "Verification email sent! Check your inbox and click the verification link."
             );
 
-            // Keep user signed in until verification is checked
+            // Navigate to email verification page
             navigate("/verify-email");
         } catch (error) {
             console.error("Registration error:", error);
 
             if (error.code === "auth/email-already-in-use") {
                 alert("এই email দিয়ে ইতিমধ্যে account তৈরি করা হয়েছে।");
+            } else if (error.code === "auth/weak-password") {
+                alert("Password কমপক্ষে ৬ অক্ষরের হতে হবে।");
+            } else if (error.code === "auth/invalid-email") {
+                alert("সঠিক email address দাও।");
             } else {
                 alert(error.message || "Registration failed!");
             }
@@ -129,8 +143,8 @@ const Register = () => {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
-            <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+        <main className="flex min-h-screen items-center justify-center bg-gray-50 px-3 py-8 sm:px-5 sm:py-12">
+            <div className="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-5 shadow-md sm:p-8">
 
                 {/* Header */}
                 <div className="mb-7 text-center">
@@ -138,11 +152,11 @@ const Register = () => {
                         <BiHeart className="text-3xl text-red-600" />
                     </div>
 
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                         Join Life<span className="text-red-600">Drop</span>
                     </h1>
 
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm leading-6 text-gray-600">
                         Create your account and help save lives.
                     </p>
                 </div>
@@ -152,48 +166,54 @@ const Register = () => {
 
                     {/* Full Name */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="register-name" className={labelClass}>
                             Full Name
                         </label>
                         <input
+                            id="register-name"
                             type="text"
                             name="name"
                             placeholder="Enter your full name"
-                            className="input w-full border-gray-200 bg-white"
+                            className={inputClass}
+                            autoComplete="name"
                             required
                         />
                     </div>
 
                     {/* Email */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="register-email" className={labelClass}>
                             Email Address
                         </label>
                         <input
+                            id="register-email"
                             type="email"
                             name="email"
                             placeholder="you@example.com"
-                            className="input w-full border-gray-200 bg-white"
+                            className={inputClass}
+                            autoComplete="email"
                             required
                         />
                     </div>
 
                     {/* Password */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="register-password" className={labelClass}>
                             Password
                         </label>
 
                         <input
+                            id="register-password"
                             type={showPassword ? "text" : "password"}
                             name="password"
                             placeholder="Create a password"
-                            className="input w-full border-gray-200 bg-white"
+                            className={inputClass}
+                            autoComplete="new-password"
                             minLength={6}
                             required
                         />
 
-                        <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-gray-500">
+                        <label className="mt-3 flex w-fit cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
                             <input
                                 type="checkbox"
                                 className="checkbox checkbox-sm checkbox-error"
@@ -208,14 +228,17 @@ const Register = () => {
 
                     {/* Phone */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="register-number" className={labelClass}>
                             Phone Number
                         </label>
                         <input
+                            id="register-number"
                             type="tel"
                             name="number"
                             placeholder="01XXXXXXXXX"
-                            className="input w-full border-gray-200 bg-white"
+                            className={inputClass}
+                            autoComplete="tel"
+                            inputMode="tel"
                             required
                         />
                     </div>
@@ -225,19 +248,21 @@ const Register = () => {
 
                         {/* Blood Group */}
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                            <label htmlFor="register-blood" className={labelClass}>
                                 Blood Group
                             </label>
 
                             <select
+                                id="register-blood"
                                 name="bloodGroup"
                                 defaultValue=""
-                                className="select w-full border-gray-200 bg-white"
+                                className={selectClass}
                                 required
                             >
                                 <option value="" disabled>
                                     Select group
                                 </option>
+
                                 {[
                                     "A+",
                                     "A-",
@@ -257,17 +282,18 @@ const Register = () => {
 
                         {/* District */}
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                            <label htmlFor="register-district" className={labelClass}>
                                 District
                             </label>
 
                             <select
+                                id="register-district"
                                 name="district"
                                 value={selectedDistrict}
                                 onChange={(e) =>
                                     setSelectedDistrict(e.target.value)
                                 }
-                                className="select w-full border-gray-200 bg-white"
+                                className={selectClass}
                                 required
                             >
                                 <option value="" disabled>
@@ -285,15 +311,16 @@ const Register = () => {
 
                     {/* Upazila */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">
+                        <label htmlFor="register-upazila" className={labelClass}>
                             Upazila
                         </label>
 
                         <select
+                            id="register-upazila"
                             name="upazila"
                             defaultValue=""
                             key={selectedDistrict}
-                            className="select w-full border-gray-200 bg-white"
+                            className={selectClass}
                             disabled={!selectedDistrict}
                             required
                         >
@@ -308,34 +335,40 @@ const Register = () => {
                                     </option>
                                 ))}
                         </select>
+
+                        {!selectedDistrict && (
+                            <p className="mt-1.5 text-xs text-gray-600">
+                                Select a district first.
+                            </p>
+                        )}
                     </div>
 
                     {/* Submit */}
                     <button
                         type="submit"
                         disabled={loading}
-                        className="btn w-full border-0 bg-red-600 text-white hover:bg-red-700"
+                        className="btn mt-2 w-full border-0 bg-red-600 text-base font-semibold text-white hover:bg-red-700 disabled:bg-red-300"
                     >
                         {loading ? "Please wait..." : "Create Account"}
                     </button>
                 </form>
 
                 {/* Login Link */}
-                <p className="mt-6 text-center text-sm text-gray-600">
+                <p className="mt-6 text-center text-sm text-gray-700">
                     Already have an account?{" "}
                     <Link
                         to="/auth/login"
-                        className="font-semibold text-red-600 hover:underline"
+                        className="font-bold text-red-700 hover:text-red-800 hover:underline"
                     >
                         Login
                     </Link>
                 </p>
 
-                <p className="mt-5 text-center text-xs text-gray-400">
+                <p className="mt-5 text-center text-xs leading-5 text-gray-500">
                     Every drop counts. Your donation can save a life.
                 </p>
             </div>
-        </div>
+        </main>
     );
 };
 

@@ -12,6 +12,12 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    const inputClass =
+        "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 placeholder:text-gray-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100";
+
+    const labelClass =
+        "mb-2 block text-sm font-semibold text-gray-800";
+
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -42,6 +48,7 @@ const Login = () => {
             }
 
             form.reset();
+            setShowPassword(false);
             navigate("/dashboard");
         } catch (error) {
             console.error("Login failed:", error.code, error.message);
@@ -90,25 +97,30 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 px-4 py-10">
-            <div className="mx-auto flex min-h-[80vh] max-w-md items-center">
-                <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+        <main className="flex min-h-screen items-center justify-center bg-gray-50 px-3 py-8 sm:px-5 sm:py-12">
+            <div className="mx-auto flex w-full max-w-md items-center">
+                <div className="w-full rounded-2xl border border-gray-200 bg-white p-5 shadow-md sm:p-8">
 
                     {/* Logo */}
-                    <Link to="/" className="mb-8 flex items-center gap-2">
-                        <span className="text-4xl text-red-500">♥</span>
+                    <Link
+                        to="/"
+                        className="mb-8 flex w-fit items-center gap-2"
+                    >
+                        <span className="text-4xl text-red-600">
+                            ♥
+                        </span>
 
                         <h1 className="text-2xl font-bold text-gray-900">
-                            Life<span className="text-red-500">Drop</span>
+                            Life<span className="text-red-600">Drop</span>
                         </h1>
                     </Link>
 
                     {/* Heading */}
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                         Welcome Back!
                     </h2>
 
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm leading-6 text-gray-600">
                         Login to your LifeDrop donor account.
                     </p>
 
@@ -121,7 +133,7 @@ const Login = () => {
                         <div>
                             <label
                                 htmlFor="email"
-                                className="mb-2 block text-sm font-medium text-gray-700"
+                                className={labelClass}
                             >
                                 Email Address
                             </label>
@@ -133,7 +145,7 @@ const Login = () => {
                                 placeholder="Enter your email"
                                 autoComplete="email"
                                 required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                className={inputClass}
                             />
                         </div>
 
@@ -141,7 +153,7 @@ const Login = () => {
                         <div>
                             <label
                                 htmlFor="password"
-                                className="mb-2 block text-sm font-medium text-gray-700"
+                                className={labelClass}
                             >
                                 Password
                             </label>
@@ -154,7 +166,7 @@ const Login = () => {
                                     placeholder="Enter your password"
                                     autoComplete="current-password"
                                     required
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-20 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                                    className={`${inputClass} pr-20`}
                                 />
 
                                 <button
@@ -162,7 +174,12 @@ const Login = () => {
                                     onClick={() =>
                                         setShowPassword((previous) => !previous)
                                     }
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 hover:text-red-500"
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded px-1 py-1 text-sm font-semibold text-gray-700 transition hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-200"
                                 >
                                     {showPassword ? "Hide" : "Show"}
                                 </button>
@@ -170,19 +187,19 @@ const Login = () => {
                         </div>
 
                         {/* Remember & Forgot Password */}
-                        <div className="flex items-center justify-between gap-3 text-sm">
-                            <label className="flex items-center gap-2 text-gray-600">
+                        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                            <label className="flex cursor-pointer items-center gap-2 font-medium text-gray-700">
                                 <input
                                     type="checkbox"
                                     name="remember"
-                                    className="accent-red-500"
+                                    className="checkbox checkbox-sm checkbox-error"
                                 />
                                 Remember me
                             </label>
 
                             <Link
                                 to="/forgot-password"
-                                className="font-medium text-red-500 hover:underline"
+                                className="font-semibold text-red-700 hover:text-red-800 hover:underline"
                             >
                                 Forgot password?
                             </Link>
@@ -193,7 +210,7 @@ const Login = () => {
                             <div
                                 role="alert"
                                 aria-live="polite"
-                                className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700"
+                                className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800"
                             >
                                 {errorMessage}
                             </div>
@@ -203,29 +220,29 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full rounded-lg bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {loading ? "Checking..." : "Login"}
                         </button>
                     </Form>
 
                     {/* Sign Up */}
-                    <p className="mt-6 text-center text-sm text-gray-600">
+                    <p className="mt-6 text-center text-sm leading-6 text-gray-700">
                         Don&apos;t have an account?{" "}
                         <Link
                             to="/auth/register"
-                            className="font-semibold text-red-500 hover:underline"
+                            className="font-bold text-red-700 hover:text-red-800 hover:underline"
                         >
                             Sign Up
                         </Link>
                     </p>
 
-                    <p className="mt-6 text-center text-xs text-gray-400">
+                    <p className="mt-6 text-center text-xs leading-5 text-gray-500">
                         Donate Blood. Save Lives. ❤️
                     </p>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };
 
