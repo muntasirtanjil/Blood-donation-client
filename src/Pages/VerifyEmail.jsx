@@ -3,10 +3,11 @@ import { use, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { reload, signOut } from "firebase/auth";
 import { AuthContext } from "../provider/AuthProvider";
+import Swal from "sweetalert2";
 
 const VerifyEmail = () => {
     const [loading, setLoading] = useState(false);
-    const { setUser,auth } = use(AuthContext);
+    const { setUser, auth } = use(AuthContext);
     const navigate = useNavigate();
 
     const handleVerify = async () => {
@@ -25,9 +26,21 @@ const VerifyEmail = () => {
             await reload(user);
 
             if (!auth.currentUser.emailVerified) {
-                alert(
-                    "Email এখনো verify হয়নি। Inbox থেকে verification link-এ click করো।"
-                );
+                Swal.fire({
+                    title: "Email এখনো verify হয়নি। Inbox থেকে verification link-এ click করো।",
+                    showClass: {
+                        popup: `
+      animate__animated
+      animate__fadeInUp
+      animate__faster
+    ` },
+                    hideClass: {
+                        popup: `
+      animate__animated
+      animate__fadeOutDown
+      animate__faster
+    ` }
+                });
                 return;
             }
 

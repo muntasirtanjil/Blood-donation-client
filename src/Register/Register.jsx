@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { BiHeart } from "react-icons/bi";
 import { AuthContext } from "../provider/AuthProvider";
 import { sendEmailVerification } from "firebase/auth";
+import Swal from "sweetalert2";
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -119,9 +120,21 @@ const Register = () => {
             // Send verification email
             await sendEmailVerification(user);
 
-            alert(
-                "Verification email sent! Check your inbox and click the verification link."
-            );
+            Swal.fire({
+                title: "Verification email sent! Check your inbox and click the verification link",
+                showClass: {
+                    popup: `
+      animate__animated
+      animate__fadeInUp
+      animate__faster
+    ` },
+                hideClass: {
+                    popup: `
+      animate__animated
+      animate__fadeOutDown
+      animate__faster
+    ` }
+            });
 
             // Navigate to email verification page
             navigate("/verify-email");
