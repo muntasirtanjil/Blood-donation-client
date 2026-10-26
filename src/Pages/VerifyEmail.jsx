@@ -76,7 +76,21 @@ const VerifyEmail = () => {
 
             setUser(auth.currentUser);
 
-            alert("Email verified! Welcome to LifeDrop.");
+            Swal.fire({
+                title: "Email verified! Welcome to LifeDrop.",
+                showClass: {
+                    popup: `
+      animate__animated
+      animate__fadeInUp
+      animate__faster
+    ` },
+                hideClass: {
+                    popup: `
+      animate__animated
+      animate__fadeOutDown
+      animate__faster
+    ` }
+            });
             navigate("/dashboard");
         } catch (error) {
             console.error("Verification error:", error);
