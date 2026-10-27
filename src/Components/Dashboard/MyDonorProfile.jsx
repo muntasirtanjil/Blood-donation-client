@@ -215,7 +215,7 @@ const API_URL =  "https://blood-donation-server-silk.vercel.app";
                         data.message || "Availability update করা যায়নি"
                     );
                 }
-                console.log("Saved availability:", data);
+                // console.log("Saved availability:", data);
                 setAvailable(newAvailability);
 
 
