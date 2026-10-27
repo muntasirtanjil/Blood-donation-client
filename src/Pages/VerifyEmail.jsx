@@ -58,7 +58,7 @@ const VerifyEmail = () => {
 
             // Save donor data only after email verification
             const response = await fetch(
-                "https://blood-donation-server-silk.vercel.app/donors",
+                "https://blood-donation-server-silk.vercel.app",
                 {
                     method: "POST",
                     headers: {

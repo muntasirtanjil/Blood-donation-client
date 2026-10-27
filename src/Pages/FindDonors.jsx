@@ -16,11 +16,13 @@ const FindDonors = () => {
   const [bloodGroup, setBloodGroup] = useState("");
   const [district, setDistrict] = useState("");
   const [upazila, setUpazila] = useState("");
+  const [availableOnly, setAvailableOnly] = useState(false);
 
   const [appliedFilters, setAppliedFilters] = useState({
     bloodGroup: "",
     district: "",
     upazila: "",
+    availableOnly: false,
   });
 
   const [loading, setLoading] = useState(true);
@@ -112,6 +114,7 @@ const FindDonors = () => {
       bloodGroup,
       district,
       upazila,
+      availableOnly,
     });
   };
 
@@ -120,11 +123,13 @@ const FindDonors = () => {
     setBloodGroup("");
     setDistrict("");
     setUpazila("");
+    setAvailableOnly(false);
 
     setAppliedFilters({
       bloodGroup: "",
       district: "",
       upazila: "",
+      availableOnly: false,
     });
   };
 
@@ -138,14 +143,15 @@ const FindDonors = () => {
           (!appliedFilters.district ||
             donor.district === appliedFilters.district) &&
           (!appliedFilters.upazila ||
-            donor.upazila === appliedFilters.upazila)
+            donor.upazila === appliedFilters.upazila) &&
+          (!appliedFilters.availableOnly ||
+            donor.available === true)
       ),
     [donors, appliedFilters]
   );
 
   return (
     <main className="min-h-screen bg-gray-50">
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-red-50 via-white to-rose-50 px-4 py-14 sm:py-20">
         <div className="mx-auto max-w-7xl text-center">
@@ -168,7 +174,6 @@ const FindDonors = () => {
       {/* Search Filters */}
       <section className="relative px-3 sm:px-4">
         <div className="mx-auto -mt-7 max-w-6xl rounded-2xl border border-red-100 bg-white p-4 shadow-lg shadow-red-100/40 sm:-mt-10 sm:p-8">
-
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-2xl text-red-600">
               <BiFilterAlt />
@@ -186,7 +191,6 @@ const FindDonors = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
             {/* Blood Group */}
             <div>
               <label className={labelClass}>
@@ -267,7 +271,7 @@ const FindDonors = () => {
               <button
                 type="button"
                 onClick={handleSearch}
-                className={`${buttonClass} flex-1 bg-red-600 text-white hover:bg-red-700`}
+                className={`${ buttonClass } flex - 1 bg - red - 600 text - white hover: bg - red - 700`}
               >
                 <BiSearch className="text-xl" />
                 Search
@@ -276,18 +280,41 @@ const FindDonors = () => {
               <button
                 type="button"
                 onClick={resetFilters}
-                className={`${buttonClass} border border-gray-300 bg-white text-gray-800 hover:bg-gray-100`}
+                className={`${ buttonClass } border border - gray - 300 bg - white text - gray - 800 hover: bg - gray - 100`}
               >
                 Reset
               </button>
             </div>
+          </div>
+
+          {/* Availability Filter */}
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg p-2 transition hover:bg-red-50">
+              <input
+                type="checkbox"
+                checked={availableOnly}
+                onChange={(e) =>
+                  setAvailableOnly(e.target.checked)
+                }
+                className="checkbox checkbox-error mt-0.5 shrink-0"
+              />
+
+              <span>
+                <span className="block text-sm font-semibold text-gray-900">
+                  Show available donors only
+                </span>
+
+                <span className="mt-1 block text-xs leading-5 text-gray-600">
+                  Show donors who have marked themselves as available for blood donation.
+                </span>
+              </span>
+            </label>
           </div>
         </div>
       </section>
 
       {/* Donor Results */}
       <section className="mx-auto max-w-7xl px-3 py-10 sm:px-6 sm:py-12 lg:px-8">
-
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
@@ -331,7 +358,6 @@ const FindDonors = () => {
           </div>
         ) : filteredDonors.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
             {filteredDonors.map((donor) => (
               <article
                 key={donor._id}
@@ -364,8 +390,27 @@ const FindDonors = () => {
                   </div>
                 </div>
 
+                {/* Availability Status */}
+                <div className="mt-4">
+                  {donor.available === true ? (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-800">
+                      <span className="h-2 w-2 rounded-full bg-green-600"></span>
+                      Available
+                    </span>
+                  ) : donor.available === false ? (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700">
+                      <span className="h-2 w-2 rounded-full bg-gray-500"></span>
+                      Unavailable
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">
+                      Status not set
+                    </span>
+                  )}
+                </div>
+
                 {/* Location */}
-                <div className="mt-5 flex items-start gap-2 border-t border-gray-100 pt-4 text-sm text-gray-700">
+                <div className="mt-4 flex items-start gap-2 border-t border-gray-100 pt-4 text-sm text-gray-700">
                   <BiMap className="mt-0.5 shrink-0 text-lg text-red-600" />
 
                   <span className="break-words">
@@ -381,7 +426,7 @@ const FindDonors = () => {
 
                   {donor.number ? (
                     <a
-                      href={`tel:${String(donor.number).trim()}`}
+                      href={`tel:${ String(donor.number).trim() } `}
                       className="break-all font-medium text-gray-800 transition hover:text-red-700"
                     >
                       {donor.number}
@@ -396,7 +441,7 @@ const FindDonors = () => {
                 {/* Contact Button */}
                 {donor.number ? (
                   <a
-                    href={`tel:${String(donor.number).trim()}`}
+                    href={`tel:${ String(donor.number).trim() } `}
                     className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-red-600 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
                   >
                     <BiPhone className="text-lg" />
@@ -425,7 +470,7 @@ const FindDonors = () => {
             </h3>
 
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              Try changing the blood group or location filters.
+              Try changing the blood group, location, or availability filter.
             </p>
 
             <button
