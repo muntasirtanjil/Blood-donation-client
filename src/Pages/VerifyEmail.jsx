@@ -1,12 +1,13 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {  use, useState } from "react";
+import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
-import { auth } from "../firebase/firebase.config";
+import { AuthContext } from "../provider/AuthProvider";
 
 const API_URL = "https://blood-donation-server-silk.vercel.app";
-
 const VerifyEmail = () => {
+    const {auth} = use(AuthContext);
+
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
