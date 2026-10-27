@@ -1,45 +1,44 @@
 
-import { use, useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { reload, signOut } from "firebase/auth";
-import { AuthContext } from "../provider/AuthProvider";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { auth } from "../firebase/firebase.config";
+
+const API_URL = "https://blood-donation-server-silk.vercel.app";
 
 const VerifyEmail = () => {
-    const [loading, setLoading] = useState(false);
-    const { setUser, auth } = use(AuthContext);
     const navigate = useNavigate();
 
-    const handleVerify = async () => {
-        setLoading(true);
+    const [loading, setLoading] = useState(false);
+    const [checking, setChecking] = useState(false);
 
+    const handleCheckVerification = async () => {
         try {
+            setChecking(true);
+
             const user = auth.currentUser;
 
             if (!user) {
-                alert("Please login first.");
+                await Swal.fire({
+                    icon: "warning",
+                    title: "Login required",
+                    text: "Please register or log in again.",
+                });
+
                 navigate("/auth/login");
                 return;
             }
 
-            // Refresh user's email verification status
-            await reload(user);
+            // Firebase থেকে সর্বশেষ verification status নেওয়া
+            await user.reload();
 
-            if (!auth.currentUser.emailVerified) {
-                Swal.fire({
-                    title: "Email এখনো verify হয়নি। Inbox থেকে verification link-এ click করো।",
-                    showClass: {
-                        popup: `
-      animate__animated
-      animate__fadeInUp
-      animate__faster
-    ` },
-                    hideClass: {
-                        popup: `
-      animate__animated
-      animate__fadeOutDown
-      animate__faster
-    ` }
+            const updatedUser = auth.currentUser;
+
+            if (!updatedUser?.emailVerified) {
+                await Swal.fire({
+                    icon: "info",
+                    title: "Email not verified yet",
+                    text: "Please verify your email using the link sent to your inbox.",
                 });
                 return;
             }
@@ -47,118 +46,134 @@ const VerifyEmail = () => {
             const pendingDonor = localStorage.getItem("pendingDonor");
 
             if (!pendingDonor) {
-                alert(
-                    "Registration data পাওয়া যায়নি। আবার registration করতে হবে।"
-                );
+                await Swal.fire({
+                    icon: "warning",
+                    title: "Donor information not found",
+                    text: "Your registration information was not found in this browser. Please contact support or register again if needed.",
+                });
                 return;
             }
 
-            const donorData = JSON.parse(pendingDonor);
-            donorData.uid = user.uid;
+            let donorData;
 
-            // Save donor data only after email verification
-            const response = await fetch(
-                "https://blood-donation-server-silk.vercel.app",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(donorData),
-                }
-            );
+            try {
+                donorData = JSON.parse(pendingDonor);
+            } catch (error) {
+                console.error("Invalid pendingDonor data:", error);
 
-            if (!response.ok) {
-                throw new Error("Donor data database-এ save করা যায়নি।");
+                await Swal.fire({
+                    icon: "error",
+                    title: "Invalid registration data",
+                    text: "Your saved registration information could not be read.",
+                });
+                return;
             }
 
+            // Firebase user ID যুক্ত করা
+            const payload = {
+                ...donorData,
+                uid: updatedUser.uid,
+                email: updatedUser.email || donorData.email,
+            };
+
+            if (!payload.uid || !payload.email) {
+                throw new Error("Firebase UID or email is missing.");
+            }
+
+            setLoading(true);
+
+            // Donor profile MongoDB backend-এ পাঠানো
+            const response = await fetch(`${API_URL}/donors`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            // Backend-এর response পড়া
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                console.error("Donor save failed:", {
+                    status: response.status,
+                    response: result,
+                });
+
+                if (response.status === 409) {
+                    throw new Error(
+                        "এই Firebase account-এর donor profile আগে থেকেই আছে। Login করে Dashboard দেখ।"
+                    );
+                }
+
+                throw new Error(
+                    result.message ||
+                    `Donor profile save failed. HTTP status: ${response.status}`
+                );
+            }
+
+            console.log("Donor saved successfully:", result);
+
+            // Save সফল হলেই pending data মুছে ফেলা
             localStorage.removeItem("pendingDonor");
 
-            setUser(auth.currentUser);
-
-            Swal.fire({
-                title: "Email verified! Welcome to LifeDrop.",
-                showClass: {
-                    popup: `
-      animate__animated
-      animate__fadeInUp
-      animate__faster
-    ` },
-                hideClass: {
-                    popup: `
-      animate__animated
-      animate__fadeOutDown
-      animate__faster
-    ` }
+            await Swal.fire({
+                icon: "success",
+                title: "Email verified!",
+                text: "Your donor profile has been saved successfully.",
+                confirmButtonText: "Go to Dashboard",
             });
+
             navigate("/dashboard");
         } catch (error) {
-            console.error("Verification error:", error);
-            alert(error.message || "Something went wrong.");
+            console.error("Email verification/profile save error:", error);
+
+            await Swal.fire({
+                icon: "error",
+                title: "Something went wrong",
+                text:
+                    error.message ||
+                    "Donor profile save করা যায়নি। আবার চেষ্টা কর।",
+            });
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            setUser(null);
-            navigate("/auth/login");
-        } catch (error) {
-            console.error(error);
-            alert("Logout করা যায়নি।");
+            setChecking(false);
         }
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
-            <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm sm:p-8">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
-                    <span className="text-3xl text-red-600">✉</span>
-                </div>
+        <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
+            <div className="w-full max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 text-center shadow-lg sm:p-8">
+                <div className="mb-4 text-5xl">📩</div>
 
-                <h1 className="mt-4 text-2xl font-bold text-gray-900">
+                <h1 className="mb-3 text-2xl font-bold sm:text-3xl">
                     Verify Your Email
                 </h1>
 
-                <p className="mt-3 text-sm leading-6 text-gray-600">
-                    তোর email inbox-এ পাঠানো verification link-এ click কর।
-                    তারপর এই page-এ ফিরে এসে নিচের button চাপ।
+                <p className="mb-6 text-sm leading-6 text-base-content/70 sm:text-base">
+                    Email inbox থেকে LifeDrop-এর verification link-এ click কর।
+                    Verification সম্পন্ন হলে নিচের button-এ click কর।
                 </p>
 
                 <button
-                    onClick={handleVerify}
-                    disabled={loading}
-                    className="btn mt-6 w-full border-0 bg-red-600 text-white hover:bg-red-700"
+                    type="button"
+                    onClick={handleCheckVerification}
+                    disabled={loading || checking}
+                    className="btn btn-primary w-full"
                 >
-                    {loading ? "Checking..." : "I've Verified My Email"}
+                    {loading || checking ? (
+                        <>
+                            <span className="loading loading-spinner loading-sm"></span>
+                            Please wait...
+                        </>
+                    ) : (
+                        "I've Verified My Email"
+                    )}
                 </button>
 
-                <button
-                    onClick={handleLogout}
-                    className="btn btn-outline mt-3 w-full"
-                >
-                    Logout
-                </button>
-
-                <p className="mt-5 text-sm text-gray-500">
-                    Already verified?{" "}
-                    <button
-                        type="button"
-                        onClick={handleVerify}
-                        className="font-semibold text-red-600 hover:underline"
-                    >
-                        Check now
-                    </button>
+                <p className="mt-4 text-xs text-base-content/60">
+                    Verification-এর পরও সমস্যা হলে browser Console-এর error দেখ।
                 </p>
-
-                <Link
-                    to="/auth/login"
-                    className="mt-4 inline-block text-sm text-gray-500 hover:text-red-600"
-                >
-                    Back to Login
-                </Link>
             </div>
         </div>
     );
