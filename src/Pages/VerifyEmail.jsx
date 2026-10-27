@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { auth } from "../firebase/firebase.config";
@@ -13,10 +13,13 @@ const VerifyEmail = () => {
     const [checking, setChecking] = useState(false);
 
     const handleCheckVerification = async () => {
-        try {
-            setChecking(true);
+        if (loading || checking) return;
 
-            const user = auth.currentUser;
+        setChecking(true);
+
+        try {
+            // 1. Firebase user check
+            let user = auth.currentUser;
 
             if (!user) {
                 await Swal.fire({
@@ -29,27 +32,27 @@ const VerifyEmail = () => {
                 return;
             }
 
-            // Firebase থেকে সর্বশেষ verification status নেওয়া
+            // 2. Latest email verification status
             await user.reload();
+            user = auth.currentUser;
 
-            const updatedUser = auth.currentUser;
-
-            if (!updatedUser?.emailVerified) {
+            if (!user?.emailVerified) {
                 await Swal.fire({
                     icon: "info",
                     title: "Email not verified yet",
-                    text: "Please verify your email using the link sent to your inbox.",
+                    text: "Open your inbox and click the LifeDrop verification link.",
                 });
                 return;
             }
 
+            // 3. Read pending registration data
             const pendingDonor = localStorage.getItem("pendingDonor");
 
             if (!pendingDonor) {
                 await Swal.fire({
-                    icon: "warning",
-                    title: "Donor information not found",
-                    text: "Your registration information was not found in this browser. Please contact support or register again if needed.",
+                    icon: "error",
+                    title: "Registration data not found",
+                    text: "Your saved registration data is missing from this browser. Please contact support before registering again.",
                 });
                 return;
             }
@@ -59,21 +62,21 @@ const VerifyEmail = () => {
             try {
                 donorData = JSON.parse(pendingDonor);
             } catch (error) {
-                console.error("Invalid pendingDonor data:", error);
+                console.error("Invalid pendingDonor JSON:", error);
 
                 await Swal.fire({
                     icon: "error",
                     title: "Invalid registration data",
-                    text: "Your saved registration information could not be read.",
+                    text: "Your saved donor information could not be read.",
                 });
                 return;
             }
 
-            // Firebase user ID যুক্ত করা
+            // 4. Prepare donor payload
             const payload = {
                 ...donorData,
-                uid: updatedUser.uid,
-                email: updatedUser.email || donorData.email,
+                uid: user.uid,
+                email: user.email || donorData.email,
             };
 
             if (!payload.uid || !payload.email) {
@@ -82,8 +85,12 @@ const VerifyEmail = () => {
 
             setLoading(true);
 
-            // Donor profile MongoDB backend-এ পাঠানো
-            const response = await fetch(`${API_URL}/donors`, {
+            // 5. Save donor data to backend
+            const endpoint = `${API_URL}/donors`;
+
+            console.log("Sending donor data to:", endpoint);
+
+            const response = await fetch(endpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -91,30 +98,38 @@ const VerifyEmail = () => {
                 body: JSON.stringify(payload),
             });
 
-            // Backend-এর response পড়া
-            const result = await response.json().catch(() => ({}));
+            const contentType = response.headers.get("content-type") || "";
+
+            const result = contentType.includes("application/json")
+                ? await response.json()
+                : await response.text();
+
+            console.log("Donor API response:", {
+                url: endpoint,
+                status: response.status,
+                result,
+            });
 
             if (!response.ok) {
-                console.error("Donor save failed:", {
-                    status: response.status,
-                    response: result,
-                });
+                const message =
+                    typeof result === "object" && result !== null
+                        ? result.message
+                        : result;
 
                 if (response.status === 409) {
                     throw new Error(
-                        "এই Firebase account-এর donor profile আগে থেকেই আছে। Login করে Dashboard দেখ।"
+                        message ||
+                        "Donor profile already exists. Please log in and check your Dashboard."
                     );
                 }
 
                 throw new Error(
-                    result.message ||
+                    message ||
                     `Donor profile save failed. HTTP status: ${response.status}`
                 );
             }
 
-            console.log("Donor saved successfully:", result);
-
-            // Save সফল হলেই pending data মুছে ফেলা
+            // 6. Clear pending data only after successful save
             localStorage.removeItem("pendingDonor");
 
             await Swal.fire({
@@ -126,14 +141,15 @@ const VerifyEmail = () => {
 
             navigate("/dashboard");
         } catch (error) {
-            console.error("Email verification/profile save error:", error);
+            console.error("Email verification / donor save error:", error);
 
             await Swal.fire({
                 icon: "error",
-                title: "Something went wrong",
+                title: "Could not save donor profile",
                 text:
                     error.message ||
-                    "Donor profile save করা যায়নি। আবার চেষ্টা কর।",
+                    "Something went wrong. Please try again.",
+                confirmButtonText: "OK",
             });
         } finally {
             setLoading(false);
@@ -144,15 +160,17 @@ const VerifyEmail = () => {
     return (
         <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
             <div className="w-full max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 text-center shadow-lg sm:p-8">
-                <div className="mb-4 text-5xl">📩</div>
+                <div className="mb-4 text-5xl" aria-hidden="true">
+                    📩
+                </div>
 
                 <h1 className="mb-3 text-2xl font-bold sm:text-3xl">
                     Verify Your Email
                 </h1>
 
                 <p className="mb-6 text-sm leading-6 text-base-content/70 sm:text-base">
-                    Email inbox থেকে LifeDrop-এর verification link-এ click কর।
-                    Verification সম্পন্ন হলে নিচের button-এ click কর।
+                    Check your inbox and click the LifeDrop verification link.
+                    After verifying your email, click the button below.
                 </p>
 
                 <button
@@ -163,7 +181,7 @@ const VerifyEmail = () => {
                 >
                     {loading || checking ? (
                         <>
-                            <span className="loading loading-spinner loading-sm"></span>
+                            <span className="loading loading-spinner loading-sm" />
                             Please wait...
                         </>
                     ) : (
@@ -172,7 +190,8 @@ const VerifyEmail = () => {
                 </button>
 
                 <p className="mt-4 text-xs text-base-content/60">
-                    Verification-এর পরও সমস্যা হলে browser Console-এর error দেখ।
+                    If verification succeeds but your donor profile is not saved,
+                    check the browser Console and Network tabs.
                 </p>
             </div>
         </div>
