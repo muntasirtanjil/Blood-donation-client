@@ -1,5 +1,5 @@
 
-import { BiAddToQueue, BiDroplet,  BiHeart, BiHeartSquare,  } from "react-icons/bi";
+import { BiAddToQueue, BiDroplet, BiHeart, BiHeartSquare, } from "react-icons/bi";
 import { BsArrowRight, BsArrowRightCircle, BsDroplet } from "react-icons/bs";
 import { Link } from "react-router";
 import bloodLogo from '../assets/Blood Donation Logo.png'
@@ -54,9 +54,8 @@ const Home = () => {
                 {["A", "B", "O", "AB"].map((group, index) => (
                   <div
                     key={group}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white ${
-                      ["bg-red-500", "bg-rose-700", "bg-red-400", "bg-slate-700"][index]
-                    }`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white ${["bg-red-500", "bg-rose-700", "bg-red-400", "bg-slate-700"][index]
+                      }`}
                   >
                     {group}
                   </div>
@@ -105,34 +104,36 @@ const Home = () => {
         </div>
       </section>
 
-    
+
       {/* Become a Donor CTA */}
       <section className="mx-auto max-w-7xl px-5 pb-14 sm:px-8 sm:pb-20">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 to-red-500 px-6 py-10 text-white sm:px-10 sm:py-14 lg:px-16">
           <div className="absolute -right-12 -top-16 h-64 w-64 rounded-full border-[35px] border-white/10" />
+          <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full border-[30px] border-white/10" />
 
           <div className="relative flex flex-col items-start justify-between gap-7 md:flex-row md:items-center">
-            <div className="max-w-xl">
+            <div className="max-w-2xl">
               <p className="flex items-center gap-2 text-sm font-semibold text-red-100">
                 <BiHeartSquare size={18} fill="currentColor" />
-                Be a Hero
+                A Little Act, A Big Impact
               </p>
 
-              <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">
-                Become a Blood Donor Today
+              <h2 className="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl">
+                Be Someone's Reason to Smile
               </h2>
 
-              <p className="mt-4 max-w-lg text-sm leading-7 text-red-50 sm:text-base">
-                Your small effort can bring a big smile to someone's
-                face. Join our community and help save lives.
+              <p className="mt-4 max-w-xl text-sm leading-7 text-red-50 sm:text-base">
+                Somewhere, someone is waiting for a second chance at life.
+                Your one donation can bring hope to a family and make a
+                difference that lasts forever. Be the hope someone needs.
               </p>
             </div>
 
             <Link
-             to="/auth/register"
+              to="/auth/register"
               className="btn min-h-12 shrink-0 border-none bg-white px-6 text-red-600 hover:bg-red-50"
             >
-              Become a Donor
+              Join LifeDrop
               <BsArrowRight size={18} />
             </Link>
           </div>
@@ -157,7 +158,7 @@ const Home = () => {
         </p>
 
         <Link
-         to="/auth/register"
+          to="/auth/register"
           className="btn mt-6 border-none bg-red-600 px-7 text-white hover:bg-red-700"
         >
           Join as a Donor

@@ -3,7 +3,6 @@ import { use, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { BiHeart } from "react-icons/bi";
 import { AuthContext } from "../provider/AuthProvider";
-import { sendEmailVerification } from "firebase/auth";
 import Swal from "sweetalert2";
 
 const Register = () => {
@@ -109,7 +108,6 @@ const Register = () => {
         try {
             // Create Firebase account
             const result = await CreateUser(email, password);
-            const user = result.user;
 
             // Save pending donor data until email verification
             localStorage.setItem(
@@ -118,7 +116,7 @@ const Register = () => {
             );
 
             // Send verification email
-            await sendEmailVerification(user);
+         
 
             Swal.fire({
                 title: "Verification email sent! Check your inbox and click the verification link",

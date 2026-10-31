@@ -1,12 +1,13 @@
 
-import {  use, useState } from "react";
+import { use, useState } from "react";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
 import { AuthContext } from "../provider/AuthProvider";
 
 const API_URL = "https://blood-donation-server-silk.vercel.app";
+
 const VerifyEmail = () => {
-    const {auth} = use(AuthContext);
+    const { auth, setUser } = use(AuthContext);
 
     const navigate = useNavigate();
 
@@ -25,15 +26,15 @@ const VerifyEmail = () => {
             if (!user) {
                 await Swal.fire({
                     icon: "warning",
-                    title: "Login required",
-                    text: "Please register or log in again.",
+                    title: "Account not found",
+                    text: "Please register again or log in.",
                 });
 
-                navigate("/auth/login");
+                navigate("/auth/login", { replace: true });
                 return;
             }
 
-            // 2. Latest email verification status
+            // 2. Get latest email verification status
             await user.reload();
             user = auth.currentUser;
 
@@ -43,18 +44,23 @@ const VerifyEmail = () => {
                     title: "Email not verified yet",
                     text: "Open your inbox and click the LifeDrop verification link.",
                 });
+
                 return;
             }
 
-            // 3. Read pending registration data
+            // 3. Update AuthProvider user state
+            setUser(user);
+
+            // 4. Get pending donor data
             const pendingDonor = localStorage.getItem("pendingDonor");
 
             if (!pendingDonor) {
                 await Swal.fire({
                     icon: "error",
                     title: "Registration data not found",
-                    text: "Your saved registration data is missing from this browser. Please contact support before registering again.",
+                    text: "Your saved registration data is missing from this browser. Please contact support.",
                 });
+
                 return;
             }
 
@@ -70,10 +76,11 @@ const VerifyEmail = () => {
                     title: "Invalid registration data",
                     text: "Your saved donor information could not be read.",
                 });
+
                 return;
             }
 
-            // 4. Prepare donor payload
+            // 5. Prepare donor payload
             const payload = {
                 ...donorData,
                 uid: user.uid,
@@ -86,7 +93,7 @@ const VerifyEmail = () => {
 
             setLoading(true);
 
-            // 5. Save donor data to backend
+            // 6. Save donor data to backend
             const endpoint = `${API_URL}/donors`;
 
             console.log("Sending donor data to:", endpoint);
@@ -130,9 +137,10 @@ const VerifyEmail = () => {
                 );
             }
 
-            // 6. Clear pending data only after successful save
+            // 7. Remove pending data after successful save
             localStorage.removeItem("pendingDonor");
 
+            // 8. Show success message
             await Swal.fire({
                 icon: "success",
                 title: "Email verified!",
@@ -140,7 +148,9 @@ const VerifyEmail = () => {
                 confirmButtonText: "Go to Dashboard",
             });
 
-            navigate("/dashboard");
+            // 9. Navigate directly to Dashboard
+            navigate("/dashboard", { replace: true });
+
         } catch (error) {
             console.error("Email verification / donor save error:", error);
 
@@ -152,6 +162,7 @@ const VerifyEmail = () => {
                     "Something went wrong. Please try again.",
                 confirmButtonText: "OK",
             });
+
         } finally {
             setLoading(false);
             setChecking(false);
@@ -161,6 +172,7 @@ const VerifyEmail = () => {
     return (
         <div className="flex min-h-[70vh] items-center justify-center px-4 py-12">
             <div className="w-full max-w-md rounded-2xl border border-base-300 bg-base-100 p-6 text-center shadow-lg sm:p-8">
+
                 <div className="mb-4 text-5xl" aria-hidden="true">
                     📩
                 </div>
@@ -194,6 +206,7 @@ const VerifyEmail = () => {
                     If verification succeeds but your donor profile is not saved,
                     check the browser Console and Network tabs.
                 </p>
+
             </div>
         </div>
     );
