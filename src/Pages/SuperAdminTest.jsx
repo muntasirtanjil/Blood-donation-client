@@ -16,7 +16,7 @@ import {
   FaTrash,
 } from "react-icons/fa";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://blood-donation-server-silk.vercel.app";
 
 const SuperAdminTest = () => {
   const { auth } = use(AuthContext);
