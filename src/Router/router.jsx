@@ -1,3 +1,4 @@
+
 import { createBrowserRouter, Navigate } from "react-router";
 import Root from "../Root/Root";
 import ErrorPage from "../Pages/EroorPage";
@@ -5,13 +6,14 @@ import Home from "../Pages/Home";
 import AboutUs from "../Pages/AboutUs";
 import FindDonors from "../Pages/FindDonors";
 import Register from "../Register/Register";
-import AuthLayout from '../provider/AuthLayout'
+import AuthLayout from "../provider/AuthLayout";
 import Login from "../Register/Login";
 import PrivateRoute from "../provider/PrivateRoute";
 import UserDashbord from "../Components/Dashboard/UserDashbord";
 import MyDonorProfile from "../Components/Dashboard/MyDonorProfile";
 import AccountSettings from "../Components/Dashboard/AccountSettings";
 import VerifyEmail from "../Pages/VerifyEmail";
+import SuperAdminTest from "../Pages/SuperAdminTest";
 
 export const router = createBrowserRouter([
     {
@@ -20,42 +22,36 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                Component: Home
-
+                Component: Home,
             },
             {
-                path: '/donors',
-                Component: FindDonors
-
+                path: "/donors",
+                Component: FindDonors,
             },
             {
-                path: '/about',
+                path: "/about",
                 Component: AboutUs,
-
-
             },
-        ]
+        ],
     },
     {
         path: "/auth",
         Component: AuthLayout,
         children: [
             {
-                path: 'register',
-                Component: Register
+                path: "register",
+                Component: Register,
             },
             {
-                path: 'login',
+                path: "login",
                 Component: Login,
-            }
-
-        ]
+            },
+        ],
     },
     {
         path: "/verify-email",
         element: <VerifyEmail />,
     },
-
     {
         path: "/dashboard",
         element: (
@@ -77,10 +73,20 @@ export const router = createBrowserRouter([
                 element: <AccountSettings />,
             },
         ],
-    }
-    ,
+    },
+
+    // Super Admin Test Route
+    {
+        path: "/superadmin-test",
+        element: (
+            <PrivateRoute>
+                <SuperAdminTest />
+            </PrivateRoute>
+        ),
+    },
+
     {
         path: "*",
         Component: ErrorPage,
-    }
-])
+    },
+]);

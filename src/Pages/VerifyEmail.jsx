@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
 import { AuthContext } from "../provider/AuthProvider";
 
-const API_URL = "https://blood-donation-server-silk.vercel.app";
+const API_URL = "http://localhost:3000";
 
 const VerifyEmail = () => {
     const { auth, setUser } = use(AuthContext);
@@ -20,7 +20,7 @@ const VerifyEmail = () => {
         setChecking(true);
 
         try {
-            // 1. Firebase user check
+            // 1. Get current Firebase user
             let user = auth.currentUser;
 
             if (!user) {
@@ -34,7 +34,7 @@ const VerifyEmail = () => {
                 return;
             }
 
-            // 2. Get latest email verification status
+            // 2. Reload user to get latest verification status
             await user.reload();
             user = auth.currentUser;
 
@@ -48,6 +48,8 @@ const VerifyEmail = () => {
                 return;
             }
 
+            setLoading(true);
+
             // 3. Update AuthProvider user state
             setUser(user);
 
@@ -55,13 +57,9 @@ const VerifyEmail = () => {
             const pendingDonor = localStorage.getItem("pendingDonor");
 
             if (!pendingDonor) {
-                await Swal.fire({
-                    icon: "error",
-                    title: "Registration data not found",
-                    text: "Your saved registration data is missing from this browser. Please contact support.",
-                });
-
-                return;
+                throw new Error(
+                    "Your saved registration data is missing. Please contact support."
+                );
             }
 
             let donorData;
@@ -71,16 +69,41 @@ const VerifyEmail = () => {
             } catch (error) {
                 console.error("Invalid pendingDonor JSON:", error);
 
-                await Swal.fire({
-                    icon: "error",
-                    title: "Invalid registration data",
-                    text: "Your saved donor information could not be read.",
-                });
-
-                return;
+                throw new Error(
+                    "Your saved donor information could not be read."
+                );
             }
 
-            // 5. Prepare donor payload
+            // 5. Get Firebase ID token
+            const token = await user.getIdToken(true);
+
+            // Common authenticated headers
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            };
+
+            // 6. Save user information
+            const userResponse = await fetch(`${API_URL}/users`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                    name: donorData.name,
+                }),
+            });
+
+            const userResult = await userResponse.json();
+
+            console.log("User API response:", userResult);
+
+            if (!userResponse.ok) {
+                throw new Error(
+                    userResult.message ||
+                    "User information could not be saved."
+                );
+            }
+
+            // 7. Prepare donor payload
             const payload = {
                 ...donorData,
                 uid: user.uid,
@@ -91,72 +114,60 @@ const VerifyEmail = () => {
                 throw new Error("Firebase UID or email is missing.");
             }
 
-            setLoading(true);
-
-            // 6. Save donor data to backend
-            const endpoint = `${API_URL}/donors`;
-
-            console.log("Sending donor data to:", endpoint);
-
-            const response = await fetch(endpoint, {
+            // 8. Save donor information
+            // IMPORTANT: Send Firebase token here too
+            const donorResponse = await fetch(`${API_URL}/donors`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers,
                 body: JSON.stringify(payload),
             });
 
-            const contentType = response.headers.get("content-type") || "";
+            // Handle JSON and non-JSON responses
+            const contentType =
+                donorResponse.headers.get("content-type") || "";
 
-            const result = contentType.includes("application/json")
-                ? await response.json()
-                : await response.text();
+            const donorResult = contentType.includes("application/json")
+                ? await donorResponse.json()
+                : await donorResponse.text();
 
-            console.log("Donor API response:", {
-                url: endpoint,
-                status: response.status,
-                result,
-            });
+            console.log("Donor API response:", donorResult);
 
-            if (!response.ok) {
+            if (!donorResponse.ok) {
                 const message =
-                    typeof result === "object" && result !== null
-                        ? result.message
-                        : result;
-
-                if (response.status === 409) {
-                    throw new Error(
-                        message ||
-                        "Donor profile already exists. Please log in and check your Dashboard."
-                    );
-                }
+                    typeof donorResult === "object" &&
+                    donorResult !== null
+                        ? donorResult.message
+                        : donorResult;
 
                 throw new Error(
                     message ||
-                    `Donor profile save failed. HTTP status: ${response.status}`
+                    `Donor profile save failed. HTTP ${donorResponse.status}`
                 );
             }
 
-            // 7. Remove pending data after successful save
+            // 9. Remove pending data after successful save
             localStorage.removeItem("pendingDonor");
 
-            // 8. Show success message
+            // 10. Success message
             await Swal.fire({
                 icon: "success",
                 title: "Email verified!",
-                text: "Your donor profile has been saved successfully.",
+                text: "Your account and donor profile have been saved successfully.",
                 confirmButtonText: "Go to Dashboard",
             });
 
-            // 9. Navigate directly to Dashboard
+            // 11. Navigate to Dashboard
             navigate("/dashboard", { replace: true });
 
         } catch (error) {
-            console.error("Email verification / donor save error:", error);
+            console.error(
+                "Email verification / save error:",
+                error
+            );
 
             await Swal.fire({
                 icon: "error",
-                title: "Could not save donor profile",
+                title: "Registration failed",
                 text:
                     error.message ||
                     "Something went wrong. Please try again.",
@@ -203,7 +214,7 @@ const VerifyEmail = () => {
                 </button>
 
                 <p className="mt-4 text-xs text-base-content/60">
-                    If verification succeeds but your donor profile is not saved,
+                    If verification succeeds but your profile is not saved,
                     check the browser Console and Network tabs.
                 </p>
 
