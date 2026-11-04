@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa6";
 import { AuthContext } from "../../provider/AuthProvider";
 
-const API_URL = "https://blood-donation-server-silk.vercel.app";
+const API_URL = "https://blood-donation-client-seven.vercel.app/";
 
 const MyDonorProfile = () => {
   const { user, auth } = use(AuthContext);
