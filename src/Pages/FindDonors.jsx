@@ -48,7 +48,7 @@ const FindDonors = () => {
         setError("");
 
         const response = await fetch(
-          "https://blood-donation-client-seven.vercel.app/donors",
+          "https://blood-donation-server-silk.vercel.app/donors",
           { signal: controller.signal }
         );
 
