@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa6";
 import { AuthContext } from "../../provider/AuthProvider";
 
-const API_URL = "https://blood-donation-client-seven.vercel.app/";
+const API_URL = "https://blood-donation-server-silk.vercel.app";
 
 const MyDonorProfile = () => {
   const { user, auth } = use(AuthContext);
@@ -67,11 +67,14 @@ const MyDonorProfile = () => {
         });
 
         const data = await response.json();
+        console.log("My Profile API Response:", response.status, data);
 
         if (!response.ok) {
           throw new Error(data.message || "Profile load করা যায়নি");
         }
 
+
+        
         setProfile({
           name: data.name || "",
           email: data.email || user.email || "",
