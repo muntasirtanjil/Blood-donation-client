@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
 import { AuthContext } from "../provider/AuthProvider";
 
-const API_URL = "https://blood-donation-client-seven.vercel.app/";
+const API_URL = "https://blood-donation-server-silk.vercel.app";
 
 const VerifyEmail = () => {
     const { auth, setUser } = use(AuthContext);
