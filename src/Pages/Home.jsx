@@ -14,7 +14,7 @@ import {
 import { Link } from "react-router";
 import { use } from "react";
 
-import bloodLogo from "../assets/Blood Donation Logo.png";
+import bloodLogo from "../assets/Blood Donation Logo.png"
 import { AuthContext } from "../provider/AuthProvider";
 
 const Home = () => {
